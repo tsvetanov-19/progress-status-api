@@ -21,6 +21,7 @@ class Calculator {
     ];
     private int $passedCourseDays;
     private int $expectedProgress;
+    private string $progressStatus = '';
 
     /**
      * @param int $courseDuration
@@ -42,15 +43,26 @@ class Calculator {
         $this->expectedProgress = $this->passedCourseDays * $this->dailyDesiredProgress;
 
         $this->remainingCourseSeconds = $this->currentProgress * $this->courseDuration / 100;
+
+        $this->progressStatus = $this->calculateProgressStatus();
     }
     
     public function calculateOutput(): array
     {
-        return [
-            'progress_status' => $this->calculateProgressStatus(),
-            'expected_progress' => $this->expectedProgress,
-            'needed_daily_learning_time' => $this->calculateNeededDailyLearningTime()
-        ];
+        if($this->progressStatus == self::$possibleStatuses['OVERDUE']) {
+            return [
+                'progress_status' => $this->progressStatus,
+                'expected_progress' => $this->expectedProgress,
+                'needed_daily_learning_time' => -1 // the value of impossible
+            ];
+        }
+        else {
+            return [
+                'progress_status' => $this->progressStatus,
+                'expected_progress' => $this->expectedProgress,
+                'needed_daily_learning_time' => $this->calculateNeededDailyLearningTime()
+            ];
+        }
     }
     
     private function calculateProgressStatus(): string

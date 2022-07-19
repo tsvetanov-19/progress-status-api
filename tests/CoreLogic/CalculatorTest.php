@@ -19,13 +19,20 @@ use App\CoreLogic\Calculator;
 
 class CalculatorTest extends TestCase
 {
+    public \DateTimeImmutable $currentDateTime;
+
+    public function setUp():void {
+        $this->currentDateTime = new \DateTimeImmutable();
+        $this->currentDateTime->format(DATE_RFC3339);
+    }
 
     public function testProgressIsComplete()
     {
         $duration = 123456;
         $progress = 100;
-        $startDate = new \DateTimeImmutable('2022-07-15T15:52:01+00:00');
-        $dueDate = new \DateTimeImmutable('2022-07-19T15:52:01+00:00');
+        $fiveDays = \DateInterval::createFromDateString('5 days');
+        $startDate = $this->currentDateTime->sub($fiveDays);
+        $dueDate = $this->currentDateTime->add($fiveDays);
 
         $calculator = new Calculator($duration, $progress, $startDate, $dueDate);
         $result = $calculator->calculateOutput();
@@ -33,29 +40,36 @@ class CalculatorTest extends TestCase
     }
 
 
-    public function testCourseInProgressComplete()
+    public function testCourseInProgress()
     {
         $duration = 123456;
         $progress = 14;
-        $startDate = new \DateTimeImmutable('2022-07-15T15:52:01+00:00');
-        $dueDate = new \DateTimeImmutable('2022-07-19T15:52:01+00:00');
+        $fiveDays = \DateInterval::createFromDateString('5 days');
+        $startDate = $this->currentDateTime->sub($fiveDays);
+        $dueDate = $this->currentDateTime->add($fiveDays);
+
 
         $calculator = new Calculator($duration, $progress, $startDate, $dueDate);
         $result = $calculator->calculateOutput();
-        $this->assertEquals(2, $result['needed_daily_learning_time']);
-        dd([$calculator, $result]);
-        dd($result);
+        $this->assertEquals(5, $result['needed_daily_learning_time']);
+//        dd([$calculator, $result]);
     }
 
-//    public function testDueDateIsBeforeStartDate()
-//    {
-//
-//    }
-//
-//    public function testDueDateIsBeforeNow()
-//    {
-//
-//    }
+    public function testDueDateHasPassed()
+    {
+        $duration = 123456;
+        $progress = 14;
+        $fiveDays = \DateInterval::createFromDateString('5 days');
+        $twoDays = \DateInterval::createFromDateString('2 days');
+        $startDate = $this->currentDateTime->sub($fiveDays);
+        $dueDate = $this->currentDateTime->sub($twoDays);
+
+
+        $calculator = new Calculator($duration, $progress, $startDate, $dueDate);
+        $result = $calculator->calculateOutput();
+        $this->assertEquals('overdue', $result['progress_status']);
+    }
+
 //
 //    public function testNowIsBeforeStartDate()
 //    {

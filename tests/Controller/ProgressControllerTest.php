@@ -53,4 +53,12 @@ class ProgressControllerTest extends WebTestCase
         $this->assertStringContainsString("Due date in wrong format, must use RFC3339!", $client->getResponse()->getContent());
     }
 
+    public function testDueDateBeforeStart()
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/statuses/1/2/2022-07-17T15:52:01+00:00/2022-07-15T15:52:01+00:00');
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertStringContainsString("Due date must be after course start!", $client->getResponse()->getContent());
+    }
+
 }

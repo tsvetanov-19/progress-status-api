@@ -53,6 +53,10 @@ class ProgressController extends AbstractController
             $errors[] = "Due date in wrong format, must use RFC3339!";
         }
 
+        if($dueDate <= $dateCreated) {
+            $errors[] = "Due date must be after course start!";
+        }
+
         if(!empty($errors)) {
             $status = Response::HTTP_BAD_REQUEST;
             $message = ['errorMessage' => implode(PHP_EOL, $errors)];
