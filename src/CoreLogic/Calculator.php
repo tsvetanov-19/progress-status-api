@@ -12,7 +12,7 @@ class Calculator {
     private int $remainingCourseDays;
     private int $remainingCourseSeconds;
     private float $dailyDesiredProgress;
-    private \DateTime $currentTime;
+    private DateTime $currentTime;
 
     private static array $possibleStatuses = [
         'ON_TRACK'=>'on track',
@@ -24,25 +24,25 @@ class Calculator {
     private string $progressStatus = '';
 
     /**
-     * @param int $courseDuration
-     * @param int $currentProgress
-     * @param DateTimeImmutable $courseStart
-     * @param DateTimeImmutable $dueDate
+     * @param int $courseDuration in seconds
+     * @param int $currentProgress in percent between [0, 100]
+     * @param DateTimeImmutable $courseStart RFC-3339
+     * @param DateTimeImmutable $dueDate RFC-3339
      * Constructor expects sanitized and plausible input and calculates derived data from the input
      */
     public function __construct(private readonly int $courseDuration, private readonly int $currentProgress, private readonly DateTimeImmutable $courseStart, private readonly DateTimeImmutable $dueDate)
     {
         $this->percentRemaining = 100 - $this->currentProgress;
         $this->currentTime = new DateTime();
-        $this->timeRemaining = (int) $this->dueDate->diff($this->currentTime)->format("v");
-        $this->totalCourseDays =  $this->dueDate->diff($this->courseStart)->format("%a");
-        $this->passedCourseDays = (int) $this->currentTime->diff($this->courseStart)->format("%a");
+        $this->timeRemaining = round((int) $this->dueDate->diff($this->currentTime)->format("v"));
+        $this->totalCourseDays =  round($this->dueDate->diff($this->courseStart)->format("%a"));
+        $this->passedCourseDays = round($this->currentTime->diff($this->courseStart)->format("%a"));
         $this->remainingCourseDays = $this->totalCourseDays - $this->passedCourseDays;
-        $this->dailyDesiredProgress = 100 / $this->totalCourseDays;
+        $this->dailyDesiredProgress = round(100 / $this->totalCourseDays);
 
-        $this->expectedProgress = $this->passedCourseDays * $this->dailyDesiredProgress;
+        $this->expectedProgress =  ($this->currentTime >= $this->courseStart) ? round($this->passedCourseDays * $this->dailyDesiredProgress) : 0 ;
 
-        $this->remainingCourseSeconds = $this->currentProgress * $this->courseDuration / 100;
+        $this->remainingCourseSeconds = round($this->courseDuration - $this->currentProgress * $this->courseDuration / 100) ;
 
         $this->progressStatus = $this->calculateProgressStatus();
     }
@@ -70,16 +70,11 @@ class Calculator {
         if($this->currentTime >= $this->dueDate) {
             return self::$possibleStatuses['OVERDUE'];
         }
-        else if($this->currentProgress >= $this->expectedProgress) {
+        else if($this->currentProgress >= $this->expectedProgress || $this->currentTime < $this->courseStart) {
             return self::$possibleStatuses['ON_TRACK'];
         }
         else return self::$possibleStatuses['NOT_ON_TRACK'];
     }
-    
-//    private function calculateExpectedProgress(): int
-//    {
-//        return (int) $this->passedCourseDays * $this->dailyDesiredProgress;
-//    }
     
     private function calculateNeededDailyLearningTime(): int
     {
@@ -87,7 +82,12 @@ class Calculator {
             return 0;
         }
         else {
-            return $this->remainingCourseSeconds / ($this->remainingCourseDays)  >0 ? $this->remainingCourseDays : 1;
+            if($this->remainingCourseDays > 1) {
+                return round($this->remainingCourseSeconds / $this->remainingCourseDays);
+            }
+            else {
+                return $this->remainingCourseSeconds;
+            }
         }
     }
 }

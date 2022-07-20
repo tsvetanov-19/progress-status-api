@@ -64,18 +64,8 @@ class ProgressController extends AbstractController
 
         else {
             $status = Response::HTTP_OK;
-            $progress_status = '';
-            $expected_progress = 0;
-            $needed_daily_learning_time = 0;
-            $put = [
-                'progress_status' => $progress_status,
-                'expected_progress' => $expected_progress,
-                'needed_daily_learning_time' => $needed_daily_learning_time,
-                'input' => [$duration, $currentProgress, $dateCreated, $dueDate]
-            ];
-            $message = $put;
-//            $calculator = new Calculator($duration, $currentProgress, $dateCreated, $dueDate);
-//            $message = $calculator->calculateOutput();
+            $calculator = new Calculator($duration, $currentProgress, $dateCreated, $dueDate);
+            $message = $calculator->calculateOutput();
 
         }
 
