@@ -66,7 +66,6 @@ class ProgressController extends AbstractController
             $status = Response::HTTP_OK;
             $calculator = new Calculator($duration, $currentProgress, $dateCreated, $dueDate);
             $message = $calculator->calculateOutput();
-
         }
 
         return $this->json($message, $status);
