@@ -83,7 +83,6 @@ class CalculatorTest extends TestCase
         $startDate = $this->currentDateTime->sub($twoDays);
         $dueDate = $this->currentDateTime->add($eightDays);
 
-//        dd([$startDate, $dueDate]);
         $calculator = new Calculator($duration, $progress, $startDate, $dueDate);
         $result = $calculator->calculateOutput();
         $this->assertEquals('not on track', $result['progress_status']);
